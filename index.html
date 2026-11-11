@@ -1,0 +1,5107 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Bursa Pro">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Bursa Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Segoe UI,Arial,sans-serif;
+}
+
+body{
+    background:#0f172a;
+    color:white;
+    padding:20px;
+}
+
+.container{
+    max-width:1600px;
+    margin:auto;
+}
+
+h1{
+    margin-bottom:20px;
+}
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.card{
+    background:#1e293b;
+    border-radius:12px;
+    padding:20px;
+}
+
+.card h3{
+    color:#cbd5e1;
+    margin-bottom:10px;
+}
+
+.value{
+    font-size:26px;
+    font-weight:bold;
+}
+
+.section{
+    background:#1e293b;
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:20px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:10px;
+}
+
+input,
+select,
+button{
+
+    padding:12px;
+    border:none;
+    border-radius:8px;
+}
+
+input,
+select{
+    background:#334155;
+    color:white;
+}
+
+button{
+    background:#2563eb;
+    color:white;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+button:hover{
+    background:#1d4ed8;
+}
+
+.delete-btn{
+    background:#dc2626;
+}
+
+.delete-btn:hover{
+    background:#b91c1c;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+}
+
+th{
+    background:#334155;
+    padding:12px;
+}
+
+td{
+    padding:10px;
+    text-align:center;
+    border-bottom:1px solid #334155;
+}
+
+.profit{
+    color:#22c55e;
+    font-weight:bold;
+}
+
+.loss{
+    color:#ef4444;
+    font-weight:bold;
+}
+
+.portfolio-tab{
+
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+
+    padding:10px 15px;
+    margin:5px;
+
+    border-radius:10px;
+
+    background:#334155;
+}
+
+.portfolio-active{
+    background:#2563eb;
+}
+
+.active-name{
+    color:#60a5fa;
+}
+
+.heat-item{
+
+    display:inline-block;
+
+    margin:5px;
+
+    padding:12px 18px;
+
+    border-radius:10px;
+
+    font-weight:bold;
+}
+
+.heat-green{
+    background:#166534;
+}
+
+.heat-red{
+    background:#991b1b;
+}
+
+.portfolio-line{
+
+    margin-bottom:10px;
+
+    padding:10px;
+
+    border-radius:8px;
+
+    background:#334155;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>📈 Bursa Pro - LORIN</h1>
+
+<div class="cards">
+
+<div class="card">
+<h3>💰 Valoare Totală</h3>
+<div id="totalValue" class="value">0</div>
+</div>
+
+<div class="card">
+<h3>💵 Cost Total</h3>
+<div id="totalCost" class="value">0</div>
+</div>
+
+<div class="card">
+<h3>📈 Profit Total</h3>
+<div id="totalProfit" class="value">0</div>
+</div>
+
+<div class="card">
+<h3>🚀 Randament</h3>
+<div id="returnPercent" class="value">0%</div>
+</div>
+
+<div class="card">
+<h3>📊 Poziții</h3>
+<div id="positionsCount" class="value">0</div>
+</div>
+
+<div class="card">
+<h3>💼 Portofolii</h3>
+<div id="portfolioCount" class="value">0</div>
+</div>
+
+</div>
+
+<div class="section">
+
+<h2>💼 Portofolii</h2>
+
+
+<button onclick="importMyPortfolio()">
+
+Importă Portofoliul Meu
+
+</button>
+
+<button onclick="createPortfolio()">
+
+➕ Portofoliu Nou
+
+</button>
+
+<div id="portfolioTabs"></div>
+
+</div>
+
+<div class="section">
+
+<h2>🎨 Temă</h2>
+
+<button
+onclick="toggleTheme()">
+
+Schimbă Tema
+
+</button>
+
+</div>
+
+<div class="section">
+
+<h2>
+
+Portofoliu activ:
+
+<span
+id="activePortfolioName"
+class="active-name">
+
+Portofoliu Principal
+
+</span>
+
+</h2>
+
+
+<div class="form-grid">
+
+<input id="symbol" placeholder="Simbol">
+
+<input id="company" placeholder="Companie">
+
+<input id="shares"
+type="number"
+placeholder="Cantitate">
+
+<input id="avgPrice"
+type="number"
+step="0.01"
+placeholder="Preț Mediu">
+
+<input id="currentPrice"
+type="number"
+step="0.01"
+placeholder="Preț Curent">
+
+<select id="currency">
+<option>USD</option>
+<option>EUR</option>
+<option>GBP</option>
+<option>RON</option>
+</select>
+
+<button onclick="addPosition()">
+
+Adaugă
+
+</button>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h2>🏆 Analiză Globală</h2>
+
+<p>
+<b>Top câștigător:</b>
+<span id="bestPosition">-</span>
+</p>
+
+<p>
+<b>Top pierzător:</b>
+<span id="worstPosition">-</span>
+</p>
+
+
+
+<div id="portfolioSummary"></div>
+
+</div>
+<div class="section">
+
+<h2>📊 Poziții</h2>
+
+<table>
+
+<thead>
+
+<tr>
+<th>Simbol</th>
+<th>Companie</th>
+<th>Cantitate</th>
+<th>Preț Mediu</th>
+<th>Preț Curent</th>
+<th>Monedă</th>
+<th>P/L</th>
+<th>Șterge</th>
+</tr>
+
+</thead>
+
+<tbody id="portfolioTable">
+
+</tbody>
+
+</table>
+
+</div>
+
+<div class="section">
+
+<h2>🔥 Heatmap Poziții</h2>
+
+<div id="heatmap"></div>
+
+</div>
+
+<div class="section">
+
+<h2>💱 Distribuție Valutară</h2>
+
+<div id="currencyDistribution"></div>
+
+</div>
+
+<div class="section">
+
+<h2>📈 Valoare pe Portofolii</h2>
+
+<canvas id="portfolioChart"></canvas>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h2>👁️ Watchlist</h2>
+
+<div class="form-grid">
+
+<input
+id="watchSymbol"
+placeholder="Simbol">
+
+<input
+id="watchTarget"
+type="number"
+placeholder="Țintă preț">
+
+<select id="watchPriority">
+
+<option>🔥 Mare</option>
+
+<option>⭐ Medie</option>
+
+<option>📝 Mică</option>
+
+</select>
+
+<button
+onclick="addWatchlist()">
+
+Adaugă
+
+</button>
+
+</div>
+
+
+
+<div id="watchlistContainer">
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h2>📅 Radar Evenimente</h2>
+
+<div id="eventsContainer">
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h2>🤖 Watchlist AI</h2>
+
+<div id="watchlistAI">
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h2>💸 Vinde Acțiuni</h2>
+
+<div class="form-grid">
+
+<input
+id="sellSymbol"
+placeholder="Simbol">
+
+<input
+id="sellShares"
+type="number"
+placeholder="Cantitate">
+
+<input
+id="sellPrice"
+type="number"
+step="0.01"
+placeholder="Preț Vânzare">
+
+<button
+onclick="sellPosition()">
+
+Vinde
+
+</button>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h2>📜 Istoric Tranzacții</h2>
+
+<div id="transactionsHistory"></div>
+
+</div>
+
+<div class="section">
+
+<h2>💰 Profit Realizat</h2>
+
+<div id="realizedProfit"></div>
+
+</div>
+
+<div class="section">
+
+<h2>🏦 Dividende</h2>
+
+<div id="dividendContainer"></div>
+
+</div>
+
+<div class="section">
+
+<h2>💾 Backup & Restore</h2>
+
+<button onclick="exportBackup()">
+
+Export JSON
+
+</button>
+
+<input
+type="file"
+id="importFile"
+accept=".json">
+
+<button onclick="importBackup()">
+
+Import JSON
+
+</button>
+
+</div>
+
+<div class="section">
+
+<h2>📜 Audit Log</h2>
+
+<div id="auditContainer"></div>
+
+</div>
+
+<div class="section">
+
+<h2>📸 Snapshot-uri</h2>
+
+<div id="snapshotContainer"></div>
+
+<button onclick="createSnapshot()">
+
+Creează Snapshot
+
+</button>
+
+</div>
+
+<div class="section">
+
+<h2>📊 Dashboard Fiscal</h2>
+
+<div id="taxDashboard"></div>
+
+</div>
+
+<div class="section">
+
+<h2>📄 Raport Fiscal</h2>
+
+<button onclick="generateTaxReport()">
+
+Generează Raport
+
+</button>
+
+<div id="taxReportContainer"></div>
+
+</div>
+
+<div class="section">
+
+<h2>📤 Export CSV</h2>
+
+<button onclick="exportCSV()">
+
+Export Tranzacții
+
+</button>
+
+</div>
+
+<div class="section">
+
+<h2>🧠 Investment IQ 2.0</h2>
+
+<div id="iqAdvanced"></div>
+
+</div>
+
+<div class="section">
+
+<h2>⚠️ Risk Engine</h2>
+
+<div id="riskScore"></div>
+
+</div>
+
+<div class="section">
+
+<h2>❤️ Portfolio Health</h2>
+
+<div id="healthScore"></div>
+
+</div>
+
+<div class="section">
+
+<h2>🌍 Asset Allocation</h2>
+
+<div id="assetAllocation"></div>
+
+</div>
+
+<div class="section">
+
+<h2>📊 Benchmark</h2>
+
+<div id="benchmarkPanel"></div>
+
+</div>
+
+<div class="section">
+
+<h2>🌍 Expunere Geografică</h2>
+
+<div id="countryExposure"></div>
+
+</div>
+
+<div class="section">
+
+<h2>🏭 Expunere Sectorială</h2>
+
+<div id="sectorExposure"></div>
+
+</div>
+
+<div class="section">
+
+<h2>⚖️ Concentrare Portofoliu</h2>
+
+<div id="concentrationPanel"></div>
+
+</div>
+
+<div class="section">
+
+<h2>🎯 Portfolio Optimizer</h2>
+
+<div id="optimizerPanel"></div>
+
+</div>
+
+<div class="section">
+
+<h2>💎 Valuation Engine</h2>
+
+<div id="valuationPanel"></div>
+
+</div>
+
+<div class="section">
+
+<h2>📈 DCF Calculator</h2>
+
+<div id="dcfPanel"></div>
+
+</div>
+
+<div class="section">
+
+<h2>🎯 Bull / Base / Bear</h2>
+
+<div id="scenarioPanel"></div>
+
+</div>
+
+<div class="section">
+
+<h2>📱 Instalare</h2>
+
+<button id="installBtn">
+
+Instalează Bursa Pro
+
+</button>
+
+</div>
+
+<div class="section">
+
+<h2>🛡 Margin of Safety</h2>
+
+<div id="safetyPanel"></div>
+
+</div>
+
+<div class="section">
+
+<h2>🤖 AI Coach</h2>
+
+<div id="aiCoachPanel"></div>
+
+</div>
+
+<div class="section">
+
+<h2>🎯 Oportunități</h2>
+
+<div id="opportunitiesPanel"></div>
+
+</div>
+
+<div class="section">
+
+<h2>⚠️ Riscuri</h2>
+
+<div id="riskAlertsPanel"></div>
+
+</div>
+
+<div class="section">
+
+<h2>🏛 Investment Committee</h2>
+
+<div id="committeePanel"></div>
+
+</div>
+
+<div class="section">
+
+<h2>📅 Daily Briefing</h2>
+
+<div id="dailyBriefing"></div>
+
+</div>
+
+<div class="section">
+
+<h2>📈 Performance Analytics</h2>
+
+<div id="performanceAnalytics"></div>
+
+</div>
+
+<div class="section">
+
+<h2>📉 Drawdown</h2>
+
+<div id="drawdownPanel"></div>
+
+</div>
+
+<div class="section">
+
+<h2>⚡ Sharpe Ratio</h2>
+
+<div id="sharpePanel"></div>
+
+</div>
+
+<div class="section">
+
+<h2>🏥 Portfolio Health Pro</h2>
+
+<div id="healthProPanel"></div>
+
+</div>
+
+<div class="section">
+
+<h2>🎖 Investment Grade</h2>
+
+<div id="investmentGradePanel"></div>
+
+</div>
+<script>
+
+if(typeof Chart === "undefined"){
+    window.Chart = function(){
+        this.destroy = function(){};
+        this.update = function(){};
+    };
+}
+
+
+let deferredPrompt;
+
+window.addEventListener(
+
+"beforeinstallprompt",
+
+event=>{
+
+event.preventDefault();
+
+deferredPrompt =
+event;
+
+});
+
+let portfolioChart = null;
+
+let database = {
+
+    activePortfolio:"main",
+
+    settings:{
+
+        theme:"dark",
+
+        currency:"RON"
+
+    },
+
+    watchlist:[],
+
+    events:[],
+
+    transactions:[],
+
+    dividends:[],
+
+    auditLog:[],
+
+    snapshots:[],
+
+    taxReports:[],
+
+    countries:{},
+
+    sectors:{},
+
+    aiSettings:{
+
+        enabled:true
+
+    },
+
+    portfolios:[
+
+        {
+
+            id:"main",
+
+            name:"Portofoliu Principal",
+
+            positions:[]
+
+        }
+
+    ]
+
+};
+
+function generateId(){
+
+    return "pf_" +
+        Date.now() +
+        "_" +
+        Math.floor(
+            Math.random()*10000
+        );
+
+}
+
+function calculateCompanyScore(position){
+
+    let score = 50;
+
+    const profit =
+
+        (
+        position.currentPrice -
+        position.averagePrice
+        )
+        * position.shares;
+
+    if(profit > 0){
+
+        score += 20;
+
+    }
+
+    if(profit > 500){
+
+        score += 15;
+
+    }
+
+    if(profit < 0){
+
+        score -= 15;
+
+    }
+
+    return Math.max(
+        0,
+        Math.min(score,100)
+    );
+
+}
+
+function calculateVolatility(){
+
+    const positions =
+        calculateGlobalStats()
+        .totalPositions;
+
+    if(positions === 0){
+        return 100;
+    }
+
+    return Math.max(
+        20,
+        100 - positions * 3
+    );
+
+}
+
+function calculateSharpeRatio(){
+
+    const returnPercent =
+
+        parseFloat(
+
+        document
+        .getElementById(
+        "returnPercent"
+        )
+        .textContent
+
+        ) || 0;
+
+    const volatility =
+        calculateVolatility();
+
+    if(volatility === 0){
+
+        return 0;
+
+    }
+
+    return (
+        returnPercent /
+        volatility
+    ).toFixed(2);
+
+}
+
+function calculateMaxDrawdown(){
+
+    const profit =
+
+        calculateGlobalStats()
+        .totalProfit;
+
+    if(profit > 0){
+
+        return (
+        profit * 0.25
+        );
+
+    }
+
+    return Math.abs(
+        profit
+    );
+
+}
+
+function calculateRiskAttribution(){
+
+    const diversification =
+
+        calculateDiversificationScore();
+
+    const risk =
+
+        calculateRiskScore();
+
+    return {
+
+        diversification,
+
+        risk
+
+    };
+
+}
+
+function calculateHealthPro(){
+
+    const iq =
+        calculateAdvancedIQ();
+
+    const sharpe =
+        Number(
+        calculateSharpeRatio()
+        );
+
+    const health =
+
+        (
+        iq +
+        sharpe * 10
+        )
+
+        / 2;
+
+    return Math.min(
+        100,
+        Math.round(health)
+    );
+
+}
+
+function getInvestmentGrade(){
+
+    const score =
+        calculateHealthPro();
+
+    if(score >= 90){
+
+        return "A+";
+
+    }
+
+    if(score >= 80){
+
+        return "A";
+
+    }
+
+    if(score >= 70){
+
+        return "B+";
+
+    }
+
+    if(score >= 60){
+
+        return "B";
+
+    }
+
+    return "C";
+
+}
+
+function renderPerformance(){
+
+    const global =
+
+        calculateGlobalStats();
+
+    document.getElementById(
+    "performanceAnalytics"
+    )
+
+    .innerHTML = `
+
+    <div class="portfolio-line">
+
+    Valoare:
+
+    ${global.totalValue.toFixed(2)}
+
+    </div>
+
+    <div class="portfolio-line">
+
+    Profit:
+
+    ${global.totalProfit.toFixed(2)}
+
+    </div>
+
+    <div class="portfolio-line">
+
+    Poziții:
+
+    ${global.totalPositions}
+
+    </div>
+
+    `;
+
+}
+
+function renderDrawdown(){
+
+    const drawdown =
+
+        calculateMaxDrawdown();
+
+    document.getElementById(
+    "drawdownPanel"
+    )
+
+    .innerHTML = `
+
+    <div class="portfolio-line">
+
+    Drawdown:
+
+    ${drawdown.toFixed(2)}
+
+    </div>
+
+    `;
+
+}
+
+function renderSharpe(){
+
+    const sharpe =
+        calculateSharpeRatio();
+
+    document.getElementById(
+    "sharpePanel"
+    )
+
+    .innerHTML = `
+
+    <div class="portfolio-line">
+
+    Sharpe Ratio:
+
+    ${sharpe}
+
+    </div>
+
+    `;
+
+}
+
+function renderHealthPro(){
+
+    const health =
+        calculateHealthPro();
+
+    document.getElementById(
+    "healthProPanel"
+    )
+
+    .innerHTML = `
+
+    <div class="portfolio-line">
+
+    Portfolio Health:
+
+    ${health}/100
+
+    </div>
+
+    `;
+
+}
+
+function renderInvestmentGrade(){
+
+    const grade =
+        getInvestmentGrade();
+
+    document.getElementById(
+    "investmentGradePanel"
+    )
+
+    .innerHTML = `
+
+    <div class="portfolio-line">
+
+    Grade:
+
+    ${grade}
+
+    </div>
+
+    `;
+
+}
+
+function findOpportunities(){
+
+    const opportunities = [];
+
+    database.portfolios.forEach(
+        portfolio=>{
+
+        portfolio.positions.forEach(
+            position=>{
+
+            const score =
+
+            calculateCompanyScore(
+                position
+            );
+
+            if(score >= 70){
+
+                opportunities.push({
+
+                    symbol:
+                    position.symbol,
+
+                    score
+
+                });
+
+            }
+
+        });
+
+    });
+
+    return opportunities;
+
+}
+
+function detectRisks(){
+
+    const risks = [];
+
+    database.portfolios.forEach(
+
+        portfolio=>{
+
+        portfolio.positions.forEach(
+
+        position=>{
+
+        const profit =
+
+            (
+            position.currentPrice -
+            position.averagePrice
+            )
+            * position.shares;
+
+        if(profit < -500){
+
+            risks.push(
+
+            `${position.symbol}
+            în pierdere mare`
+
+            );
+
+        }
+
+        });
+
+    });
+
+    return risks;
+
+}
+
+function renderAICoach(){
+
+    const diversification =
+
+        calculateDiversificationScore();
+
+    let message =
+        "";
+
+    if(
+        diversification < 60
+    ){
+
+        message =
+
+        "Adaugă sectoare noi și ETF-uri.";
+
+    }else{
+
+        message =
+
+        "Portofoliul este diversificat rezonabil.";
+
+    }
+
+    document.getElementById(
+
+    "aiCoachPanel"
+
+    ).innerHTML = `
+
+    <div class="portfolio-line">
+
+    ${message}
+
+    </div>
+
+    `;
+
+}
+
+function renderOpportunities(){
+
+    const items =
+        findOpportunities();
+
+    let html = "";
+
+    items.forEach(item=>{
+
+        html += `
+
+        <div
+        class="portfolio-line">
+
+        🟢
+
+        ${item.symbol}
+
+        |
+
+        Score:
+
+        ${item.score}
+
+        </div>
+
+        `;
+
+    });
+
+    document.getElementById(
+    "opportunitiesPanel"
+    ).innerHTML = html;
+
+}
+
+function renderRisks(){
+
+    const risks =
+        detectRisks();
+
+    let html = "";
+
+    risks.forEach(risk=>{
+
+        html += `
+
+        <div
+        class="portfolio-line">
+
+        🔴
+
+        ${risk}
+
+        </div>
+
+        `;
+
+    });
+
+    document.getElementById(
+    "riskAlertsPanel"
+    ).innerHTML = html;
+
+}
+
+function renderCommittee(){
+
+    const iq =
+        calculateAdvancedIQ();
+
+    let verdict =
+
+        "HOLD";
+
+    if(iq >= 85){
+
+        verdict =
+
+        "ACCUMULATE";
+
+    }
+
+    if(iq < 60){
+
+        verdict =
+
+        "REVIEW";
+
+    }
+
+    document.getElementById(
+    "committeePanel"
+    )
+
+    .innerHTML = `
+
+    <div
+    class="portfolio-line">
+
+    Investment IQ:
+
+    ${iq}
+
+    </div>
+
+    <div
+    class="portfolio-line">
+
+    Verdict:
+
+    ${verdict}
+
+    </div>
+
+    `;
+
+}
+
+function renderDailyBriefing(){
+
+    const global =
+        calculateGlobalStats();
+
+    const realized =
+        calculateRealizedProfit();
+
+    document.getElementById(
+    "dailyBriefing"
+    )
+
+    .innerHTML = `
+
+    <div
+    class="portfolio-line">
+
+    Valoare:
+
+    ${global.totalValue
+    .toFixed(2)}
+
+    </div>
+
+    <div
+    class="portfolio-line">
+
+    Profit total:
+
+    ${global.totalProfit
+    .toFixed(2)}
+
+    </div>
+
+    <div
+    class="portfolio-line">
+
+    Profit realizat:
+
+    ${realized
+    .toFixed(2)}
+
+    </div>
+
+    `;
+
+}
+
+function assignDefaultData(){
+
+    if(
+        Object.keys(
+        database.countries
+        ).length > 0
+    ){
+        return;
+    }
+
+    database.countries = {
+
+        PLTR:"USA",
+        TSLA:"USA",
+        SOFI:"USA",
+        SHOP:"Canada",
+        BARC:"UK",
+        BYD:"China",
+        MELI:"Latin America",
+        DUOL:"USA",
+        TTD:"USA"
+
+    };
+
+    database.sectors = {
+
+        PLTR:"Technology",
+        TSLA:"Automotive",
+        SOFI:"Financial",
+        SHOP:"Technology",
+        BARC:"Financial",
+        BYD:"Automotive",
+        MELI:"E-Commerce",
+        DUOL:"Education",
+        TTD:"Advertising"
+
+    };
+
+}
+
+function addWatchlist(){
+
+const symbol =
+    document.getElementById(
+    "watchSymbol"
+    ).value;
+
+    const target =
+    Number(
+    document.getElementById(
+    "watchTarget"
+    ).value
+    );
+
+    const priority =
+    document.getElementById(
+    "watchPriority"
+    ).value;
+
+    if(!symbol){
+        return;
+    }
+
+    database.watchlist.push({
+
+        symbol,
+
+        target,
+
+        priority,
+
+        notes:""
+
+    });
+
+    saveData();
+
+    render();
+
+}
+
+
+function deleteWatch(index){
+
+    database.watchlist.splice(
+        index,
+        1
+    );
+
+    saveData();
+
+    render();
+
+renderWatchlist();
+
+renderEvents();
+
+renderWatchlistAI();
+
+renderCountryExposure();
+
+renderSectorExposure();
+
+renderConcentration();
+
+renderOptimizer();
+
+renderValuation();
+
+renderDCF();
+
+renderScenarios();
+
+renderSafety();
+
+renderAICoach();
+
+renderOpportunities();
+
+renderRisks();
+
+renderCommittee();
+
+renderDailyBriefing();
+
+renderPerformance();
+
+renderDrawdown();
+
+renderSharpe();
+
+renderHealthPro();
+
+renderInvestmentGrade();
+
+}
+
+function addAuditLog(message){
+
+    database.auditLog.push({
+
+        message,
+
+        timestamp:
+        new Date()
+        .toLocaleString()
+
+    });
+
+}
+
+function getRealizedProfitByYear(){
+
+    const result = {};
+
+    database.transactions.forEach(
+
+    transaction=>{
+
+    if(
+        transaction.type !==
+        "SELL"
+    ){
+        return;
+    }
+
+    const year =
+
+    new Date()
+    .getFullYear();
+
+    if(!result[year]){
+
+        result[year] = 0;
+
+    }
+
+    result[year] +=
+    transaction.profit || 0;
+
+    });
+
+    return result;
+
+}
+
+function getDividendsByYear(){
+
+    const result = {};
+
+    database.dividends.forEach(
+
+    dividend=>{
+
+    const year =
+    new Date()
+    .getFullYear();
+
+    if(!result[year]){
+
+        result[year] = 0;
+
+    }
+
+    result[year] +=
+    dividend.amount;
+
+    });
+
+    return result;
+
+}
+
+function calculateDiversificationScore(){
+
+    const positions =
+        calculateGlobalStats()
+        .totalPositions;
+
+    const portfolios =
+        database.portfolios.length;
+
+    let score = 0;
+
+    score += Math.min(
+        positions * 4,
+        60
+    );
+
+    score += Math.min(
+        portfolios * 8,
+        40
+    );
+
+    return Math.min(
+        score,
+        100
+    );
+
+}
+
+function calculateRiskScore(){
+
+    const positions =
+        calculateGlobalStats()
+        .totalPositions;
+
+    if(
+        positions >= 20
+    ){
+        return 25;
+    }
+
+    if(
+        positions >= 10
+    ){
+        return 50;
+    }
+
+    if(
+        positions >= 5
+    ){
+        return 75;
+    }
+
+    return 90;
+
+}
+
+function calculateHealthScore(){
+
+    const diversification =
+        calculateDiversificationScore();
+
+    const risk =
+        calculateRiskScore();
+
+    return Math.round(
+
+        (
+        diversification +
+        (100-risk)
+        )
+        / 2
+
+    );
+
+}
+
+function calculateAdvancedIQ(){
+
+    const diversification =
+        calculateDiversificationScore();
+
+    const health =
+        calculateHealthScore();
+
+    const baseIQ =
+        calculateInvestmentIQ();
+
+    return Math.round(
+
+        (
+        diversification +
+        health +
+        baseIQ
+        )
+        / 3
+
+    );
+
+}
+
+function calculateAllocation(){
+
+    let totalStocks = 0;
+
+    let totalValue = 0;
+
+    database.portfolios.forEach(
+        portfolio=>{
+
+        portfolio.positions.forEach(
+            position=>{
+
+            const value =
+
+                position.currentPrice *
+                position.shares;
+
+            totalStocks += value;
+
+            totalValue += value;
+
+        });
+
+    });
+
+    return {
+
+        stocks:
+
+        totalValue === 0
+        ?
+        0
+        :
+        (
+        totalStocks /
+        totalValue
+        ) * 100
+
+    };
+
+}
+
+function renderBenchmark(){
+
+    const yearlyReturn =
+        Number(
+
+        document
+        .getElementById(
+        "returnPercent"
+        )
+        .textContent
+        .replace("%","")
+
+        ) || 0;
+
+    const b =
+        database.settings
+        .benchmarks;
+
+    document
+    .getElementById(
+    "benchmarkPanel"
+    )
+
+    .innerHTML = `
+
+    <div class="portfolio-line">
+
+    Bursa Pro:
+
+    ${yearlyReturn.toFixed(2)}%
+
+    </div>
+
+    <div class="portfolio-line">
+
+    S&P 500:
+
+    ${b.sp500}%
+
+    </div>
+
+    <div class="portfolio-line">
+
+    Nasdaq:
+
+    ${b.nasdaq}%
+
+    </div>
+
+    <div class="portfolio-line">
+
+    BET:
+
+    ${b.bet}%
+
+    </div>
+
+    `;
+
+}
+
+function renderRisk(){
+
+    const risk =
+        calculateRiskScore();
+
+    let label = "";
+
+    if(risk >= 80){
+
+        label =
+        "Foarte Ridicat";
+
+    }else if(risk >= 60){
+
+        label =
+        "Ridicat";
+
+    }else if(risk >= 40){
+
+        label =
+        "Moderat";
+
+    }else{
+
+        label =
+        "Redus";
+
+    }
+
+    document
+    .getElementById(
+    "riskScore"
+    )
+
+    .innerHTML = `
+
+    <h3>
+
+    ${risk}/100
+
+    </h3>
+
+
+    ${label}
+
+    `;
+
+}
+
+function renderHealth(){
+
+    const health =
+        calculateHealthScore();
+
+    document
+    .getElementById(
+    "healthScore"
+    )
+
+    .innerHTML = `
+
+    <h3>
+
+    ${health}/100
+
+    </h3>
+
+    `;
+
+}
+
+function renderAdvancedIQ(){
+
+    const iq =
+        calculateAdvancedIQ();
+
+    document
+    .getElementById(
+    "iqAdvanced"
+    )
+
+    .innerHTML = `
+
+    <h3>
+
+    ${iq}/100
+
+    </h3>
+
+    `;
+
+}
+
+function renderAllocation(){
+
+    const allocation =
+        calculateAllocation();
+
+    document
+    .getElementById(
+    "assetAllocation"
+    )
+
+    .innerHTML = `
+
+    <div
+    class="portfolio-line">
+
+    Acțiuni:
+
+    ${allocation.stocks
+    .toFixed(2)}%
+
+    </div>
+
+    `;
+
+}
+
+function renderTaxDashboard(){
+
+    const profitYears =
+
+    getRealizedProfitByYear();
+
+    const dividendYears =
+
+    getDividendsByYear();
+
+    let html = "";
+
+    Object.keys(
+        profitYears
+    ).forEach(year=>{
+
+    html += `
+
+    <div class="portfolio-line">
+
+    📅 ${year}
+
+    |
+
+    Profit:
+    ${profitYears[year]
+        .toFixed(2)}
+
+    |
+
+    Dividende:
+    ${(
+    dividendYears[year] || 0
+    ).toFixed(2)}
+
+    </div>
+
+    `;
+
+    });
+
+    document.getElementById(
+
+    "taxDashboard"
+
+    ).innerHTML = html;
+
+}
+
+function generateTaxReport(){
+
+    const realizedProfit =
+
+        calculateRealizedProfit();
+
+    let dividends = 0;
+
+    database.dividends.forEach(
+
+    item=>{
+
+    dividends +=
+        item.amount;
+
+    });
+
+    const html = `
+
+    <div class="portfolio-line">
+
+    Profit Realizat:
+
+    ${realizedProfit.toFixed(2)}
+
+    </div>
+
+    <div class="portfolio-line">
+
+    Dividende:
+
+    ${dividends.toFixed(2)}
+
+    </div>
+
+    <div class="portfolio-line">
+
+    Total:
+
+    ${(
+        realizedProfit +
+        dividends
+    ).toFixed(2)}
+
+    </div>
+
+    `;
+
+    document.getElementById(
+
+    "taxReportContainer"
+
+    ).innerHTML = html;
+
+}
+
+function exportCSV(){
+
+    let csv =
+
+    "Date,Tip,Simbol,Cantitate\n";
+
+    database.transactions.forEach(
+
+    transaction=>{
+
+    csv +=
+
+    `${transaction.date},`
+
+    +
+
+    `${transaction.type},`
+
+    +
+
+    `${transaction.symbol},`
+
+    +
+
+    `${transaction.shares}\n`;
+
+    });
+
+    const blob =
+
+    new Blob(
+
+    [csv],
+
+    {
+
+    type:"text/csv"
+
+    }
+
+    );
+
+    const url =
+
+    URL.createObjectURL(
+        blob
+    );
+
+    const a =
+    document.createElement(
+        "a"
+    );
+
+    a.href = url;
+
+    a.download =
+    "transactions.csv";
+
+    a.click();
+
+}
+
+function getFiscalSummary(){
+
+    return {
+
+        realized:
+
+        calculateRealizedProfit(),
+
+        dividends:
+
+        database.dividends
+        .reduce(
+
+        (a,b)=>
+
+        a+b.amount,
+
+        0
+
+        ),
+
+        transactions:
+
+        database.transactions.length
+
+    };
+
+}
+
+function toggleTheme(){
+
+    const body =
+        document.body;
+
+    if(
+
+    database.settings.theme
+
+    ===
+
+    "dark"
+
+    ){
+
+        database
+        .settings
+        .theme =
+
+        "light";
+
+        body.style.background =
+        "#ffffff";
+
+        body.style.color =
+        "#000000";
+
+    }
+
+    else{
+
+        database
+        .settings
+        .theme =
+
+        "dark";
+
+        body.style.background =
+        "#0f172a";
+
+        body.style.color =
+        "#ffffff";
+
+    }
+
+    saveData();
+
+}
+
+function exportBackup(){
+
+    const dataStr =
+        JSON.stringify(
+            database,
+            null,
+            2
+        );
+
+    const blob =
+        new Blob(
+
+        [dataStr],
+
+        {
+            type:
+            "application/json"
+        }
+
+    );
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+    const a =
+        document.createElement("a");
+
+    a.href = url;
+
+    a.download =
+        "bursa-backup.json";
+
+    a.click();
+
+}
+
+function importBackup(){
+
+    const file =
+    document.getElementById(
+    "importFile"
+    ).files[0];
+
+    if(!file){
+
+        return;
+
+    }
+
+    const reader =
+    new FileReader();
+
+    reader.onload =
+    function(event){
+
+        database =
+        JSON.parse(
+        event.target.result
+        );
+
+        saveData();
+
+        render();
+
+    };
+
+    reader.readAsText(
+        file
+    );
+
+}
+
+function askNotificationPermission(){
+
+    if(
+
+    "Notification"
+
+    in window
+
+    ){
+
+    Notification
+    .requestPermission();
+
+    }
+
+}
+
+function createSnapshot(){
+
+    const global =
+        calculateGlobalStats();
+
+    database.snapshots.push({
+
+        date:
+        new Date()
+        .toLocaleDateString(),
+
+        value:
+        global.totalValue,
+
+        profit:
+        global.totalProfit
+
+    });
+
+    saveData();
+
+    render();
+
+}
+
+function renderAuditLog(){
+
+    let html = "";
+
+    database.auditLog
+    .slice()
+    .reverse()
+    .forEach(log=>{
+
+    html += `
+
+    <div
+    class="portfolio-line">
+
+    ${log.timestamp}
+
+    |
+
+    ${log.message}
+
+    </div>
+
+    `;
+
+    });
+
+    document.getElementById(
+
+    "auditContainer"
+
+    ).innerHTML = html;
+
+}
+
+function renderSnapshots(){
+
+    let html = "";
+
+    database.snapshots
+    .slice()
+    .reverse()
+    .forEach(snapshot=>{
+
+    html += `
+
+    <div
+    class="portfolio-line">
+
+    📸
+
+    ${snapshot.date}
+
+    |
+
+    Valoare:
+
+    ${snapshot.value.toFixed(2)}
+
+    |
+
+    Profit:
+
+    ${snapshot.profit.toFixed(2)}
+
+    </div>
+
+    `;
+
+    });
+
+    document.getElementById(
+
+    "snapshotContainer"
+
+    ).innerHTML = html;
+
+}
+
+function sellPosition(){
+
+    const symbol =
+        document.getElementById(
+        "sellSymbol"
+        ).value
+        .toUpperCase();
+
+    const shares =
+        Number(
+        document.getElementById(
+        "sellShares"
+        ).value
+        );
+
+    const sellPrice =
+        Number(
+        document.getElementById(
+        "sellPrice"
+        ).value
+        );
+
+    const portfolio =
+        getActivePortfolio();
+
+    const position =
+        portfolio.positions.find(
+
+        p =>
+
+        p.symbol.toUpperCase()
+        === symbol
+
+        );
+
+    if(!position){
+
+        alert(
+            "Poziția nu există."
+        );
+
+        return;
+    }
+
+    if(
+        shares <= 0 ||
+        shares > position.shares
+    ){
+
+        alert(
+            "Cantitate invalidă."
+        );
+
+        return;
+    }
+
+    const profit =
+
+        (
+        sellPrice -
+        position.averagePrice
+        )
+        * shares;
+
+    database.transactions.push({
+
+        type:"SELL",
+
+        symbol,
+
+        shares,
+
+        buyPrice:
+        position.averagePrice,
+
+        sellPrice,
+
+        profit,
+
+        date:
+        new Date()
+        .toLocaleDateString()
+
+    });
+
+    position.shares -= shares;
+
+    if(
+        position.shares <= 0
+    ){
+
+        portfolio.positions =
+            portfolio.positions.filter(
+
+            p => p !== position
+
+            );
+
+    }
+
+addAuditLog(
+
+`SELL ${symbol}
+${shares}`
+
+);
+
+
+showNotification(
+
+"Poziție vândută",
+
+symbol
+
+);
+
+    saveData();
+
+    render();
+
+}
+
+
+
+
+function renderWatchlist(){
+
+    let html = "";
+
+    database.watchlist.forEach(
+
+    (item,index)=>{
+
+    html += `
+
+    <div
+    class="portfolio-line">
+
+    ${item.priority}
+
+    <b>
+
+    ${item.symbol}
+
+    </b>
+
+    |
+
+    Țintă:
+
+    ${item.target}
+
+    <button
+
+    class="delete-btn"
+
+    onclick="deleteWatch(
+    ${index}
+    )">
+
+    X
+
+    </button>
+
+    </div>
+
+    `;
+
+    });
+
+    document.getElementById(
+
+    "watchlistContainer"
+
+    ).innerHTML = html;
+
+}
+
+function renderEvents(){
+
+    let html = "";
+
+    database.events.forEach(
+
+    event=>{
+
+    html += `
+
+    <div
+    class="portfolio-line">
+
+    📅
+
+    ${event.title}
+
+    -
+
+    ${event.date}
+
+    </div>
+
+    `;
+
+    });
+
+    document.getElementById(
+
+    "eventsContainer"
+
+    ).innerHTML = html;
+
+}
+
+function renderWatchlistAI(){
+
+    let html = "";
+
+    database.watchlist.forEach(
+
+    item=>{
+
+    html += `
+
+    <div
+    class="portfolio-line">
+
+    🤖
+
+    ${item.symbol}
+
+    |
+
+    Prioritate:
+
+    ${item.priority}
+
+    |
+
+    Țintă:
+
+    ${item.target}
+
+    </div>
+
+    `;
+
+    });
+
+    document.getElementById(
+
+    "watchlistAI"
+
+    ).innerHTML = html;
+
+}
+
+function addEvent(
+
+title,
+
+date
+
+){
+
+    database.events.push({
+
+        title,
+
+        date
+
+    });
+
+}
+
+function saveData(){
+
+database.lastSave =
+new Date()
+.toLocaleString();    
+
+	localStorage.setItem(
+        "bursaPro",
+        JSON.stringify(database)
+    );
+
+}
+
+function importMyPortfolio(){
+
+    const portfolio = {
+
+        id:"main",
+
+        name:"Portofoliu Principal",
+
+        positions:[
+
+            {
+                symbol:"SPCX",
+                company:"SpaceX",
+                shares:1.0228,
+                averagePrice:175.6231,
+                currentPrice:175.6231,
+                currency:"USD"
+            },
+
+            {
+                symbol:"DUOL",
+                company:"Duolingo",
+                shares:0.3958,
+                averagePrice:456.297,
+                currentPrice:456.297,
+                currency:"USD"
+            },
+
+            {
+                symbol:"SOFI",
+                company:"SoFi Technologies",
+                shares:13.1618,
+                averagePrice:12.6863,
+                currentPrice:12.6863,
+                currency:"USD"
+            },
+
+            {
+                symbol:"TSLA",
+                company:"Tesla",
+                shares:0.1936,
+                averagePrice:293.5814,
+                currentPrice:293.5814,
+                currency:"USD"
+            },
+
+            {
+                symbol:"SHOP",
+                company:"Shopify",
+                shares:1.0349,
+                averagePrice:80.8449,
+                currentPrice:80.8449,
+                currency:"USD"
+            },
+
+            {
+                symbol:"MSTR",
+                company:"Strategy",
+                shares:0.1563,
+                averagePrice:440.69,
+                currentPrice:440.69,
+                currency:"USD"
+            },
+
+            {
+                symbol:"BYD",
+                company:"BYD",
+                shares:7.0817,
+                averagePrice:10.7659,
+                currentPrice:10.7659,
+                currency:"EUR"
+            },
+
+            {
+                symbol:"BARC",
+                company:"Barclays",
+                shares:27.2438,
+                averagePrice:2.9062,
+                currentPrice:2.9062,
+                currency:"GBP"
+            },
+
+            {
+                symbol:"ADBE",
+                company:"Adobe",
+                shares:0.1142,
+                averagePrice:296,
+                currentPrice:296,
+                currency:"USD"
+            },
+
+            {
+                symbol:"MELI",
+                company:"Mercado Libre",
+                shares:0.0573,
+                averagePrice:2316.0593,
+                currentPrice:2316.0593,
+                currency:"USD"
+            },
+
+            {
+                symbol:"PLTR",
+                company:"Palantir",
+                shares:3.4426,
+                averagePrice:83.0874,
+                currentPrice:83.0874,
+                currency:"USD"
+            },
+
+            {
+                symbol:"NFLX",
+                company:"Netflix",
+                shares:0.5736,
+                averagePrice:93.69,
+                currentPrice:93.69,
+                currency:"USD"
+            },
+
+            {
+                symbol:"ORCL",
+                company:"Oracle",
+                shares:0.197,
+                averagePrice:179.86,
+                currentPrice:179.86,
+                currency:"USD"
+            },
+
+            {
+                symbol:"PYPL",
+                company:"PayPal",
+                shares:1.2235,
+                averagePrice:85.84,
+                currentPrice:85.84,
+                currency:"USD"
+            },
+
+            {
+                symbol:"TTD",
+                company:"Trade Desk",
+                shares:1.0303,
+                averagePrice:56.38,
+                currentPrice:56.38,
+                currency:"USD"
+            },
+
+            {
+                symbol:"CNDX",
+                company:"NASDAQ100 ETF",
+                shares:0.2204,
+                averagePrice:1680.5811,
+                currentPrice:1680.5811,
+                currency:"USD"
+            },
+
+            {
+                symbol:"IUIT",
+                company:"S&P 500 IT ETF",
+                shares:2.9131,
+                averagePrice:44.6886,
+                currentPrice:44.6886,
+                currency:"USD"
+            },
+
+            {
+                symbol:"GLDV",
+                company:"Dividend Aristocrats ETF",
+                shares:0.4532,
+                averagePrice:33.5806,
+                currentPrice:33.5806,
+                currency:"USD"
+            },
+
+            {
+                symbol:"VZ",
+                company:"Verizon",
+                shares:0.7493,
+                averagePrice:43.70,
+                currentPrice:43.70,
+                currency:"USD"
+            }
+
+        ]
+
+    };
+
+    database.portfolios = [portfolio];
+
+    database.activePortfolio = "main";
+
+    saveData();
+
+    render();
+}
+
+function loadData(){
+
+    const saved =
+        localStorage.getItem(
+            "bursaPro"
+        );
+
+if(!saved){
+
+database = {
+
+activePortfolio:"main",
+
+watchlist:[
+
+{
+symbol:"PE",
+company:"Premier Energy",
+priority:"⭐ Medie"
+},
+
+{
+symbol:"SPCX",
+company:"SpaceX",
+priority:"⭐ Medie"
+},
+
+{
+symbol:"MA",
+company:"Mastercard",
+priority:"🔥 Mare"
+}
+
+],
+
+events:[
+
+{
+title:"Anthropic IPO",
+date:"Monitorizare"
+},
+
+{
+title:"Mastercard",
+date:"Monitorizare"
+},
+
+{
+title:"Verizon",
+date:"Monitorizare"
+}
+
+],
+
+transactions:[],
+
+dividends:[],
+
+auditLog:[],
+
+snapshots:[],
+
+taxReports:[],
+
+settings:{
+
+theme:"dark",
+
+currency:"RON",
+
+discountRate:10,
+
+growthRate:12,
+
+terminalGrowth:3,
+
+benchmarks:{
+sp500:10,
+nasdaq:15,
+bet:8
+}
+
+},
+
+countries:{},
+
+sectors:{},
+
+portfolios:[
+
+{
+
+id:"main",
+
+name:"Portofoliu Principal",
+
+positions:[
+
+{
+symbol:"SPCX",
+company:"SpaceX",
+shares:1.0228,
+averagePrice:175.6231,
+currentPrice:175.6231,
+currency:"USD"
+},
+
+{
+symbol:"DUOL",
+company:"Duolingo",
+shares:0.3958,
+averagePrice:456.297,
+currentPrice:456.297,
+currency:"USD"
+},
+
+{
+symbol:"SOFI",
+company:"SoFi Technologies",
+shares:13.1618,
+averagePrice:12.6863,
+currentPrice:12.6863,
+currency:"USD"
+},
+
+{
+symbol:"TSLA",
+company:"Tesla",
+shares:0.1936,
+averagePrice:293.5814,
+currentPrice:293.5814,
+currency:"USD"
+},
+
+{
+symbol:"SHOP",
+company:"Shopify",
+shares:1.0349,
+averagePrice:80.8449,
+currentPrice:80.8449,
+currency:"USD"
+},
+
+{
+symbol:"MSTR",
+company:"Strategy",
+shares:0.1563,
+averagePrice:440.69,
+currentPrice:440.69,
+currency:"USD"
+},
+
+{
+symbol:"BYD",
+company:"BYD",
+shares:7.0817,
+averagePrice:10.7659,
+currentPrice:10.7659,
+currency:"EUR"
+},
+
+{
+symbol:"BARC",
+company:"Barclays",
+shares:27.2438,
+averagePrice:2.9062,
+currentPrice:2.9062,
+currency:"GBP"
+},
+
+{
+symbol:"ADBE",
+company:"Adobe",
+shares:0.1142,
+averagePrice:296,
+currentPrice:296,
+currency:"USD"
+},
+
+{
+symbol:"MELI",
+company:"Mercado Libre",
+shares:0.0573,
+averagePrice:2316.0593,
+currentPrice:2316.0593,
+currency:"USD"
+},
+
+{
+symbol:"PLTR",
+company:"Palantir",
+shares:3.4426,
+averagePrice:83.0874,
+currentPrice:83.0874,
+currency:"USD"
+},
+
+{
+symbol:"NFLX",
+company:"Netflix",
+shares:0.5736,
+averagePrice:93.69,
+currentPrice:93.69,
+currency:"USD"
+},
+
+{
+symbol:"ORCL",
+company:"Oracle",
+shares:0.197,
+averagePrice:179.86,
+currentPrice:179.86,
+currency:"USD"
+},
+
+{
+symbol:"PYPL",
+company:"PayPal",
+shares:1.2235,
+averagePrice:85.84,
+currentPrice:85.84,
+currency:"USD"
+},
+
+{
+symbol:"TTD",
+company:"Trade Desk",
+shares:1.0303,
+averagePrice:56.38,
+currentPrice:56.38,
+currency:"USD"
+},
+
+{
+symbol:"CNDX",
+company:"NASDAQ100 ETF",
+shares:0.2204,
+averagePrice:1680.5811,
+currentPrice:1680.5811,
+currency:"USD"
+},
+
+{
+symbol:"IUIT",
+company:"S&P 500 IT ETF",
+shares:2.9131,
+averagePrice:44.6886,
+currentPrice:44.6886,
+currency:"USD"
+},
+
+{
+symbol:"GLDV",
+company:"Dividend Aristocrats ETF",
+shares:0.4532,
+averagePrice:33.5806,
+currentPrice:33.5806,
+currency:"USD"
+},
+
+{
+symbol:"VZ",
+company:"Verizon",
+shares:0.7493,
+averagePrice:43.70,
+currentPrice:43.70,
+currency:"USD"
+}
+
+]
+
+}
+
+]
+
+};
+
+saveData();
+
+}
+
+    if(saved){
+
+        database =
+            JSON.parse(saved);
+
+    }
+
+if(
+
+!database.watchlist
+
+){
+
+database.watchlist =
+[];
+
+}
+
+if(
+
+!database.events
+
+){
+
+database.events =
+[];
+
+}
+
+if(!database.auditLog){
+
+    database.auditLog = [];
+
+}
+
+if(!database.snapshots){
+
+    database.snapshots = [];
+
+}
+
+    
+normalizeDatabase();
+
+render();
+
+}
+
+function normalizeDatabase(){
+
+    database.settings = Object.assign(
+        {
+            theme:"dark",
+            currency:"RON",
+            discountRate:10,
+            growthRate:12,
+            terminalGrowth:3
+        },
+        database.settings || {}
+    );
+
+    database.settings.benchmarks = Object.assign(
+        { sp500:10, nasdaq:15, bet:8 },
+        database.settings.benchmarks || {}
+    );
+
+    [
+        "watchlist","events","transactions","dividends",
+        "auditLog","snapshots","taxReports"
+    ].forEach(key=>{
+        if(!Array.isArray(database[key])){
+            database[key] = [];
+        }
+    });
+
+    if(!database.countries){ database.countries = {}; }
+    if(!database.sectors){ database.sectors = {}; }
+
+    if(!database.aiSettings){
+        database.aiSettings = { enabled:true };
+    }
+
+    if(!Array.isArray(database.portfolios) || database.portfolios.length === 0){
+        database.portfolios = [{
+            id:"main",
+            name:"Portofoliu Principal",
+            positions:[]
+        }];
+        database.activePortfolio = "main";
+    }
+
+}
+
+
+if(
+
+database.settings.theme
+
+===
+
+"light"
+
+){
+
+document.body.style.background =
+"#ffffff";
+
+document.body.style.color =
+"#000000";
+
+}
+
+function getActivePortfolio(){
+
+    return database.portfolios.find(
+        p =>
+        p.id ===
+        database.activePortfolio
+    );
+
+}
+
+function createPortfolio(){
+
+    const name =
+        prompt(
+            "Nume portofoliu:"
+        );
+
+    if(!name) return;
+
+    const portfolio = {
+
+        id:generateId(),
+
+        name:name,
+
+        positions:[]
+
+    };
+
+    database.portfolios.push(
+        portfolio
+    );
+
+    database.activePortfolio =
+        portfolio.id;
+
+    saveData();
+
+    render();
+
+}
+
+function switchPortfolio(id){
+
+    database.activePortfolio =
+        id;
+
+    saveData();
+
+    render();
+
+}
+
+function deletePortfolio(id){
+
+    if(
+        database.portfolios.length === 1
+    ){
+
+        alert(
+            "Trebuie să existe cel puțin un portofoliu."
+        );
+
+        return;
+
+    }
+
+    const confirmed =
+        confirm(
+            "Ștergi portofoliul?"
+        );
+
+    if(!confirmed){
+        return;
+    }
+
+    database.portfolios =
+        database.portfolios.filter(
+            p =>
+            p.id !== id
+        );
+
+    database.activePortfolio =
+        database.portfolios[0].id;
+
+    saveData();
+
+    render();
+
+}
+
+function calculateCountryExposure(){
+
+    const countries = {};
+
+    database.portfolios.forEach(
+        portfolio=>{
+
+        portfolio.positions.forEach(
+            position=>{
+
+            const country =
+
+            database.countries[
+            position.symbol
+            ] || "Other";
+
+            const value =
+
+            position.currentPrice *
+            position.shares;
+
+            countries[country] =
+
+            (
+            countries[country]
+            || 0
+            ) + value;
+
+        });
+
+    });
+
+    return countries;
+
+}
+
+function calculateSectorExposure(){
+
+    const sectors = {};
+
+    database.portfolios.forEach(
+        portfolio=>{
+
+        portfolio.positions.forEach(
+            position=>{
+
+            const sector =
+
+            database.sectors[
+            position.symbol
+            ] || "Other";
+
+            const value =
+
+            position.currentPrice *
+            position.shares;
+
+            sectors[sector] =
+
+            (
+            sectors[sector]
+            || 0
+            ) + value;
+
+        });
+
+    });
+
+    return sectors;
+
+}
+
+function calculateConcentration(){
+
+    const allPositions = [];
+
+    let total = 0;
+
+    database.portfolios.forEach(
+        portfolio=>{
+
+        portfolio.positions.forEach(
+            position=>{
+
+            const value =
+
+            position.currentPrice *
+            position.shares;
+
+            total += value;
+
+            allPositions.push({
+
+                symbol:
+                position.symbol,
+
+                value
+
+            });
+
+        });
+
+    });
+
+    allPositions.sort(
+        (a,b)=>
+        b.value - a.value
+    );
+
+    return {
+
+        total,
+
+        top:
+
+        allPositions.slice(
+            0,
+            5
+        )
+
+    };
+
+}
+
+function renderCountryExposure(){
+
+    const countries =
+
+        calculateCountryExposure();
+
+    let html = "";
+
+    for(
+    const country in countries
+    ){
+
+    html += `
+
+    <div class="portfolio-line">
+
+    ${country}
+
+    |
+
+    ${countries[country]
+        .toFixed(2)}
+
+    </div>
+
+    `;
+
+    }
+
+    document.getElementById(
+    "countryExposure"
+    ).innerHTML = html;
+
+}
+
+function renderSectorExposure(){
+
+    const sectors =
+
+        calculateSectorExposure();
+
+    let html = "";
+
+    for(
+    const sector in sectors
+    ){
+
+    html += `
+
+    <div class="portfolio-line">
+
+    ${sector}
+
+    |
+
+    ${sectors[sector]
+        .toFixed(2)}
+
+    </div>
+
+    `;
+
+    }
+
+    document.getElementById(
+    "sectorExposure"
+    ).innerHTML = html;
+
+}
+
+function renderConcentration(){
+
+    const data =
+        calculateConcentration();
+
+    let html = "";
+
+    data.top.forEach(
+        item=>{
+
+        html += `
+
+        <div
+        class="portfolio-line">
+
+        ${item.symbol}
+
+        |
+
+        ${item.value
+        .toFixed(2)}
+
+        </div>
+
+        `;
+
+    });
+
+    document.getElementById(
+    "concentrationPanel"
+    ).innerHTML = html;
+
+}
+
+function renderOptimizer(){
+
+    const diversification =
+
+        calculateDiversificationScore();
+
+    let recommendation =
+
+        "Portofoliu echilibrat";
+
+    if(
+        diversification < 60
+    ){
+
+        recommendation =
+
+        "Adaugă ETF-uri și sectoare noi";
+
+    }
+
+    document.getElementById(
+    "optimizerPanel"
+    )
+
+    .innerHTML = `
+
+    <div
+    class="portfolio-line">
+
+    🎯
+
+    ${recommendation}
+
+    </div>
+
+    `;
+
+}
+
+function renamePortfolio(id){
+
+    const portfolio =
+        database.portfolios.find(
+            p => p.id === id
+        );
+
+    if(!portfolio){
+        return;
+    }
+
+    const newName = prompt(
+        "Nume nou portofoliu:",
+        portfolio.name
+    );
+
+    if(
+        !newName ||
+        !newName.trim()
+    ){
+        return;
+    }
+
+    portfolio.name =
+        newName.trim();
+
+    saveData();
+
+    render();
+
+}
+
+function renderPortfolioTabs(){
+
+    let html = "";
+
+    database.portfolios.forEach(
+        portfolio => {
+
+        html += `
+        <div class="
+        portfolio-tab
+        ${
+        portfolio.id ===
+        database.activePortfolio
+        ?
+        "portfolio-active"
+        :
+        ""
+        }">
+
+        <span
+        onclick="
+        switchPortfolio(
+        '${portfolio.id}'
+        )">
+
+        ${portfolio.name}
+
+        </span>
+
+        <button
+        onclick="
+        renamePortfolio(
+        '${portfolio.id}'
+        )">
+
+        ✏️
+
+        </button>
+
+        <button
+        class="delete-btn"
+        onclick="
+        deletePortfolio(
+        '${portfolio.id}'
+        )">
+
+        X
+
+        </button>
+
+        </div>
+        `;
+
+    });
+
+    document.getElementById(
+        "portfolioTabs"
+    ).innerHTML = html;
+
+}
+
+function calculateRealizedProfit(){
+
+    let total = 0;
+
+    database.transactions.forEach(
+
+        t => {
+
+        if(
+            t.type === "SELL"
+        ){
+
+            total +=
+                t.profit || 0;
+
+        }
+
+    });
+
+    return total;
+
+}
+
+function renderTransactions(){
+
+    let html = "";
+
+    database.transactions
+    .slice()
+    .reverse()
+    .forEach(
+
+    t => {
+
+    html += `
+
+    <div
+    class="portfolio-line">
+
+    ${t.date}
+
+    |
+
+    ${t.type}
+
+    |
+
+    ${t.symbol}
+
+    |
+
+    ${t.shares}
+
+    </div>
+
+    `;
+
+    });
+
+    document.getElementById(
+
+    "transactionsHistory"
+
+    ).innerHTML = html;
+
+}
+
+function renderRealizedProfit(){
+
+    const profit =
+
+        calculateRealizedProfit();
+
+    document.getElementById(
+
+        "realizedProfit"
+
+    ).innerHTML = `
+
+    <h3>
+
+    ${profit.toFixed(2)}
+
+    </h3>
+
+    `;
+
+}
+
+function addDividend(
+
+symbol,
+
+amount
+
+){
+
+    database.dividends.push({
+
+        symbol,
+
+        amount,
+
+        date:
+        new Date()
+        .toLocaleDateString()
+
+    });
+
+    saveData();
+
+}
+
+function renderDividends(){
+
+    let html = "";
+
+    let total = 0;
+
+    database.dividends.forEach(
+
+    d => {
+
+    total +=
+        d.amount;
+
+    html += `
+
+    <div
+    class="portfolio-line">
+
+    ${d.symbol}
+
+    |
+
+    ${d.amount}
+
+    </div>
+
+    `;
+
+    });
+
+    html += `
+
+    <hr>
+
+   
+    <b>
+
+    Total:
+    ${total.toFixed(2)}
+
+    </b>
+
+    `;
+
+    document.getElementById(
+
+    "dividendContainer"
+
+    ).innerHTML = html;
+
+}
+
+function clearForm(){
+
+    document.getElementById(
+        "symbol"
+    ).value = "";
+
+    document.getElementById(
+        "company"
+    ).value = "";
+
+    document.getElementById(
+        "shares"
+    ).value = "";
+
+    document.getElementById(
+        "avgPrice"
+    ).value = "";
+
+    document.getElementById(
+        "currentPrice"
+    ).value = "";
+
+}
+
+function addPosition(){
+
+    const symbol =
+        document.getElementById(
+        "symbol"
+        ).value;
+
+    const company =
+        document.getElementById(
+        "company"
+        ).value;
+
+    const shares =
+        Number(
+        document.getElementById(
+        "shares"
+        ).value
+        );
+
+    const avgPrice =
+        Number(
+        document.getElementById(
+        "avgPrice"
+        ).value
+        );
+
+    const currentPrice =
+        Number(
+        document.getElementById(
+        "currentPrice"
+        ).value
+        );
+
+    const currency =
+        document.getElementById(
+        "currency"
+        ).value;
+
+    if(
+        !symbol ||
+        !company
+    ){
+        return;
+    }
+
+    const portfolio =
+        getActivePortfolio();
+
+    portfolio.positions.push({
+
+        symbol,
+
+        company,
+
+        shares,
+
+        averagePrice:
+        avgPrice,
+
+        currentPrice,
+
+        currency
+
+    });
+
+database.transactions.push({
+
+    type:"BUY",
+
+    symbol,
+
+    shares,
+
+    price:avgPrice,
+
+    date:
+    new Date()
+    .toLocaleDateString()
+
+});
+
+addAuditLog(
+
+`BUY ${symbol}
+${shares}`
+
+);
+
+showNotification(
+
+"Achiziție nouă",
+
+symbol
+
+);
+
+    saveData();
+
+    clearForm();
+
+    render();
+
+}
+
+function deletePosition(index){
+
+    const portfolio =
+        getActivePortfolio();
+
+    portfolio.positions.splice(
+        index,
+        1
+    );
+
+    saveData();
+
+    render();
+
+}
+
+function calculateGlobalStats(){
+
+    let totalValue = 0;
+
+    let totalCost = 0;
+
+    let totalProfit = 0;
+
+    let totalPositions = 0;
+
+    let best = null;
+
+    let worst = null;
+
+    const currencies = {};
+
+    database.portfolios.forEach(
+        portfolio => {
+
+        portfolio.positions.forEach(
+            pos => {
+
+            const value =
+                pos.currentPrice *
+                pos.shares;
+
+            const cost =
+                pos.averagePrice *
+                pos.shares;
+
+            const profit =
+                value -
+                cost;
+
+            totalValue +=
+                value;
+
+            totalCost +=
+                cost;
+
+            totalProfit +=
+                profit;
+
+            totalPositions++;
+
+            currencies[
+                pos.currency
+            ] =
+            (
+            currencies[
+            pos.currency
+            ] || 0
+            )
+            + value;
+
+            if(
+                !best ||
+                profit >
+                best.profit
+            ){
+
+                best = {
+
+                    symbol:
+                    pos.symbol,
+
+                    profit
+
+                };
+
+            }
+
+            if(
+                !worst ||
+                profit <
+                worst.profit
+            ){
+
+                worst = {
+
+                    symbol:
+                    pos.symbol,
+
+                    profit
+
+                };
+
+            }
+
+        });
+
+    });
+
+    return {
+
+        totalValue,
+
+        totalCost,
+
+        totalProfit,
+
+        totalPositions,
+
+        best,
+
+        worst,
+
+        currencies
+
+    };
+
+}
+
+function calculateDCF(){
+
+    const settings =
+        database.settings;
+
+    const currentValue =
+        calculateGlobalStats()
+        .totalValue;
+
+    const futureValue =
+
+        currentValue *
+
+        Math.pow(
+
+        1 +
+        (settings.growthRate/100),
+
+        5
+
+        );
+
+    const discountedValue =
+
+        futureValue /
+
+        Math.pow(
+
+        1 +
+        (settings.discountRate/100),
+
+        5
+
+        );
+
+    return discountedValue;
+
+}
+
+function calculateFairValue(){
+
+    const currentValue =
+
+        calculateGlobalStats()
+        .totalValue;
+
+    const dcf =
+        calculateDCF();
+
+    return {
+
+        current:
+        currentValue,
+
+        fair:
+        dcf
+
+    };
+
+}
+
+function calculateMarginOfSafety(){
+
+    const fairValue =
+
+        calculateFairValue();
+
+    if(
+        fairValue.current === 0
+    ){
+        return 0;
+    }
+
+    return (
+
+        (
+        fairValue.fair -
+        fairValue.current
+        )
+
+        /
+
+        fairValue.current
+
+    )
+
+    * 100;
+
+}
+
+function generateScenarios(){
+
+    const fairValue =
+
+        calculateFairValue();
+
+    return {
+
+        bear:
+
+        fairValue.fair * 0.8,
+
+        base:
+
+        fairValue.fair,
+
+        bull:
+
+        fairValue.fair * 1.3
+
+    };
+
+}
+
+function calculateValuationScore(){
+
+    const margin =
+
+        calculateMarginOfSafety();
+
+    if(
+        margin > 30
+    ){
+        return 95;
+    }
+
+    if(
+        margin > 20
+    ){
+        return 85;
+    }
+
+    if(
+        margin > 10
+    ){
+        return 75;
+    }
+
+    if(
+        margin > 0
+    ){
+        return 65;
+    }
+
+    return 40;
+
+}
+
+function getValuationVerdict(){
+
+    const score =
+        calculateValuationScore();
+
+    if(score >= 85){
+
+        return "🟢 Subevaluat";
+
+    }
+
+    if(score >= 65){
+
+        return "🟡 Corect Evaluat";
+
+    }
+
+    return "🔴 Supraevaluat";
+
+}
+
+function renderValuation(){
+
+    const score =
+        calculateValuationScore();
+
+    const verdict =
+        getValuationVerdict();
+
+    document
+    .getElementById(
+    "valuationPanel"
+    )
+
+    .innerHTML = `
+
+    <div
+    class="portfolio-line">
+
+    Scor:
+
+    ${score}/100
+
+    </div>
+
+    <div
+    class="portfolio-line">
+
+    Verdict:
+
+    ${verdict}
+
+    </div>
+
+    `;
+
+}
+
+function renderDCF(){
+
+    const fairValue =
+
+        calculateFairValue();
+
+    document
+    .getElementById(
+    "dcfPanel"
+    )
+
+    .innerHTML = `
+
+    <div
+    class="portfolio-line">
+
+    Valoare Curentă:
+
+    ${fairValue.current
+        .toFixed(2)}
+
+    </div>
+
+    <div
+    class="portfolio-line">
+
+    Valoare DCF:
+
+    ${fairValue.fair
+        .toFixed(2)}
+
+    </div>
+
+    `;
+
+}
+
+function renderScenarios(){
+
+    const scenarios =
+
+        generateScenarios();
+
+    document
+    .getElementById(
+    "scenarioPanel"
+    )
+
+    .innerHTML = `
+
+    <div
+    class="portfolio-line">
+
+    🔴 Bear:
+
+    ${scenarios.bear
+        .toFixed(2)}
+
+    </div>
+
+    <div
+    class="portfolio-line">
+
+    🟡 Base:
+
+    ${scenarios.base
+        .toFixed(2)}
+
+    </div>
+
+    <div
+    class="portfolio-line">
+
+    🟢 Bull:
+
+    ${scenarios.bull
+        .toFixed(2)}
+
+    </div>
+
+    `;
+
+}
+
+function renderSafety(){
+
+    const safety =
+
+        calculateMarginOfSafety();
+
+    document
+    .getElementById(
+    "safetyPanel"
+    )
+
+    .innerHTML = `
+
+    <div
+    class="portfolio-line">
+
+    Margin of Safety:
+
+    ${safety.toFixed(2)}%
+
+    </div>
+
+    `;
+
+}
+
+function showNotification(
+
+title,
+
+message
+
+){
+
+    if(
+
+    Notification.permission
+
+    ===
+
+    "granted"
+
+    ){
+
+    new Notification(
+
+    title,
+
+    {
+
+    body:
+    message
+
+    }
+
+    );
+
+    }
+
+}
+
+const PANEL_RENDERERS = [
+    "renderAdvancedIQ","renderRisk","renderHealth","renderAllocation",
+    "renderBenchmark","renderTaxDashboard","renderTransactions",
+    "renderRealizedProfit","renderDividends","renderAuditLog","renderSnapshots",
+    "renderWatchlist","renderEvents","renderWatchlistAI",
+    "renderCountryExposure","renderSectorExposure","renderConcentration",
+    "renderOptimizer","renderValuation","renderDCF","renderScenarios","renderSafety",
+    "renderAICoach","renderOpportunities","renderRisks","renderCommittee",
+    "renderDailyBriefing","renderPerformance","renderDrawdown","renderSharpe",
+    "renderHealthPro","renderInvestmentGrade"
+];
+
+function renderPanels(){
+
+    PANEL_RENDERERS.forEach(name=>{
+
+        try{
+            if(typeof window[name] === "function"){
+                window[name]();
+            }
+        }catch(error){
+            console.error("Panou " + name + ":", error);
+        }
+
+    });
+
+}
+
+function render(){
+
+    renderCore();
+
+    renderPanels();
+
+}
+
+function renderCore(){
+
+    const portfolio =
+        getActivePortfolio();
+
+    const global =
+        calculateGlobalStats();
+
+    renderPortfolioTabs();
+
+    document.getElementById(
+        "activePortfolioName"
+    ).textContent =
+        portfolio.name;
+
+    let rows = "";
+
+    portfolio.positions.forEach(
+        (p,index)=>{
+
+        const profit =
+            (
+            p.currentPrice -
+            p.averagePrice
+            )
+            * p.shares;
+
+        rows += `
+        <tr>
+
+        <td>${p.symbol}</td>
+
+        <td>${p.company}</td>
+
+        <td>${p.shares}</td>
+
+        <td>${p.averagePrice}</td>
+
+        <td>${p.currentPrice}</td>
+
+        <td>${p.currency}</td>
+
+        <td class="${
+            profit >= 0
+            ?
+            "profit"
+            :
+            "loss"
+        }">
+
+        ${profit.toFixed(2)}
+
+        </td>
+
+        <td>
+
+        <button
+        class="delete-btn"
+        onclick="
+        deletePosition(
+        ${index}
+        )">
+
+        X
+
+        </button>
+
+        </td>
+
+        </tr>
+        `;
+
+    });
+
+    document.getElementById(
+        "portfolioTable"
+    ).innerHTML =
+        rows;
+
+    document.getElementById(
+        "totalValue"
+    ).textContent =
+        global.totalValue.toFixed(2);
+
+    document.getElementById(
+        "totalCost"
+    ).textContent =
+        global.totalCost.toFixed(2);
+
+    document.getElementById(
+        "totalProfit"
+    ).textContent =
+        global.totalProfit.toFixed(2);
+
+    document.getElementById(
+        "positionsCount"
+    ).textContent =
+        global.totalPositions;
+
+    document.getElementById(
+        "portfolioCount"
+    ).textContent =
+        database.portfolios.length;
+
+    const returnPercent =
+        global.totalCost > 0
+        ?
+        (
+        global.totalProfit /
+        global.totalCost
+        )
+        * 100
+        :
+        0;
+
+    document.getElementById(
+        "returnPercent"
+    ).textContent =
+        returnPercent.toFixed(2)
+        + "%";
+
+    document.getElementById(
+        "bestPosition"
+    ).textContent =
+
+        global.best
+        ?
+
+        `${global.best.symbol}
+        (${global.best.profit.toFixed(2)})`
+
+        :
+
+        "-";
+
+    document.getElementById(
+        "worstPosition"
+    ).textContent =
+
+        global.worst
+        ?
+
+        `${global.worst.symbol}
+        (${global.worst.profit.toFixed(2)})`
+
+        :
+
+        "-";
+
+    let summary = "";
+
+    database.portfolios.forEach(
+        p => {
+
+        let value = 0;
+
+        let profit = 0;
+
+        p.positions.forEach(
+            pos => {
+
+            value +=
+                pos.currentPrice *
+                pos.shares;
+
+            profit +=
+                (
+                pos.currentPrice -
+                pos.averagePrice
+                )
+                * pos.shares;
+
+        });
+
+        summary += `
+        <div class="
+        portfolio-line">
+
+        <b>${p.name}</b>
+
+        |
+        Valoare:
+
+        ${value.toFixed(2)}
+
+        |
+
+        Profit:
+
+        ${profit.toFixed(2)}
+
+        </div>
+        `;
+
+    });
+
+    document.getElementById(
+        "portfolioSummary"
+    ).innerHTML =
+        summary;
+
+    let heatmap = "";
+
+    portfolio.positions.forEach(
+        pos => {
+
+        const profit =
+            (
+            pos.currentPrice -
+            pos.averagePrice
+            )
+            * pos.shares;
+
+        heatmap += `
+        <div class="
+        heat-item
+        ${
+            profit >= 0
+            ?
+            "heat-green"
+            :
+            "heat-red"
+        }">
+
+        ${pos.symbol}
+
+        </div>
+        `;
+
+    });
+
+    document.getElementById(
+        "heatmap"
+    ).innerHTML =
+        heatmap;
+
+    let currencyHtml = "";
+
+    for(
+        const currency
+        in
+        global.currencies
+    ){
+
+        currencyHtml += `
+        <p>
+
+        ${currency}
+
+        :
+
+        ${global.currencies[currency]
+            .toFixed(2)}
+
+        </p>
+        `;
+
+    }
+
+    document.getElementById(
+        "currencyDistribution"
+    ).innerHTML =
+        currencyHtml;
+
+    const labels = [];
+
+    const values = [];
+
+    database.portfolios.forEach(
+        portfolio => {
+
+        labels.push(
+            portfolio.name
+        );
+
+        let total = 0;
+
+        portfolio.positions.forEach(
+            pos => {
+
+            total +=
+                pos.currentPrice *
+                pos.shares;
+
+        });
+
+        values.push(
+            total
+        );
+
+    });
+
+    if(
+        portfolioChart
+    ){
+        portfolioChart.destroy();
+    }
+
+    portfolioChart =
+        new Chart(
+
+        document.getElementById(
+            "portfolioChart"
+        ),
+
+        {
+
+            type:"bar",
+
+            data:{
+
+                labels,
+
+                datasets:[{
+
+                    label:
+                    "Valoare Portofoliu",
+
+                    data:values,
+
+                    backgroundColor:
+                    "#2563eb"
+
+                }]
+            },
+
+            options:{
+
+                responsive:true,
+
+                plugins:{
+
+                    legend:{
+
+                        labels:{
+                            color:"white"
+                        }
+
+                    }
+
+                },
+
+                scales:{
+
+                    y:{
+                        ticks:{
+                            color:"white"
+                        }
+                    },
+
+                    x:{
+                        ticks:{
+                            color:"white"
+                        }
+                    }
+
+                }
+
+            }
+
+        }
+
+    );
+
+}
+
+loadData();
+
+document
+.getElementById(
+"installBtn"
+)
+
+.addEventListener(
+
+"click",
+
+async()=>{
+
+if(
+
+!deferredPrompt
+
+){
+
+return;
+
+}
+
+deferredPrompt.prompt();
+
+});
+
+askNotificationPermission();
+
+assignDefaultData();
+
+if(!database.taxReports){
+
+    database.taxReports = [];
+
+}
+
+if(!database.settings){
+
+    database.settings = {
+
+        theme:"dark",
+
+        currency:"RON",
+
+discountRate:10,
+
+growthRate:12,
+
+terminalGrowth:3
+
+    };
+
+}
+
+if(!database.transactions){
+
+    database.transactions = [];
+
+}
+
+if(!database.dividends){
+
+    database.dividends = [];
+
+}
+
+if(
+database.events.length === 0
+){
+
+addEvent(
+"Palantir Earnings",
+"05 Nov"
+);
+
+addEvent(
+"Shopify Earnings",
+"06 Nov"
+);
+
+addEvent(
+"Trade Desk Earnings",
+"09 Nov"
+);
+
+saveData();
+
+}
+
+let currencyChart = null;
+
+let portfolioPieChart = null;
+
+function calculateInvestmentIQ(){
+
+    const stats = calculateGlobalStats();
+
+    if(stats.totalCost <= 0){
+        return 0;
+    }
+
+    const returnPct =
+        (stats.totalProfit / stats.totalCost) * 100;
+
+    let score = 50;
+
+    // randament: de la -30 la +30 puncte
+    score += Math.max(-30, Math.min(30, returnPct));
+
+    // numar de pozitii: pana la +20 puncte
+    score += Math.min(stats.totalPositions, 10) * 2;
+
+    // diversificare valutara: pana la +9 puncte
+    score += Math.min(Object.keys(stats.currencies).length, 3) * 3;
+
+    return Math.max(0, Math.min(100, Math.round(score)));
+
+}
+
+normalizeDatabase();
+
+render();
+
+if(
+
+"serviceWorker"
+
+in navigator
+
+){
+
+navigator.serviceWorker
+
+.register(
+"sw.js"
+)
+
+.then(()=>{
+
+console.log(
+
+"Service Worker activ"
+
+);
+
+});
+
+}
+
+</script>
+
+</body>
+</html>
